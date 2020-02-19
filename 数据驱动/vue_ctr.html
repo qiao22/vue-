@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+</head>
+<body>
+<div id="root">
+    <div>
+        <p>{{name}}--{{message}}</p>
+    </div>
+    <p>{{name}}</p>
+    <p>{{message}}</p>
+
+</div>
+<script>
+  let rkuohao = /\{\{(.+?)\}\}/g;
+  function compiler(template, data) {
+
+    let childNodes = template.childNodes   /*取出子元素*/
+    for (let i = 0; i < childNodes.length; i++) {
+      let type = childNodes[i].nodeType
+      if (type === 3) {
+        // 文本节点
+
+        let txt = childNodes[i].nodeValue
+
+        // 判断有没有花括号
+
+        txt = txt.replace(rkuohao, function (_, g) {
+          let key = g.trim()
+          let value = data[key]
+          return value
+
+
+        })
+        childNodes[i].nodeValue = txt
+
+
+      } else if (type === 1) {
+        compiler(childNodes[i], data)
+      }
+    }
+
+  }
+  function JGvue(options) {
+
+    // vue源码中 只读数据用$开头，内部的数据使用下划线_开头
+    this._el = options.el
+    this._data = options.data
+
+    // 准备工作 （准备模板）
+    this.$el = this._templateDom = document.querySelector(this._el)  /*拿到模板*/
+
+    this._parent = this.$el.parentNode;
+    console.log(222)
+
+    // 渲染工作
+    this.render()
+  }
+  // 讲reder方法注册到原型中   将模板结合数据 得到html  加到页面中
+  JGvue.prototype.render = function(){
+    this.compiler()
+  }
+  // 编译   将模板和数据结合  得到真正的DOM 元素
+  JGvue.prototype.compiler = function(){
+    let realHTMLDOM = this._templateDom.cloneNode( true )
+    compiler(realHTMLDOM, this._data)
+    this.update(realHTMLDOM)
+  }
+  // 讲DOM 元素放到html中
+  JGvue.prototype.update = function(real){
+    this._parent.replaceChild(real, document.querySelector('#root'))
+
+  }
+
+  new JGvue({
+    el: '#root',
+    data: {
+      name: '猪猪侠',
+      message: '我是猪猪侠'
+    }
+  })
+</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <script src="../vue-dev/dist/vue.js"></script>
+</head>
+<body>
+<div id="root">
+    <p>{{name}}</p>
+    <p>{{message}}</p>
+</div>
+<script>
+  /*
+      拆分步骤
+      1 拿到模板
+      2 拿到数据  data
+      3 将数据和模板结合，得到新的html 和 dom元素
+      4 放到页面
+
+   */
+  // 利用正则取出{{}}里面的内容
+  let rkuohao = /\{\{(.+?)\}\}/g;
+
+  let tmpNode = document.querySelector('#root');
+  let data = {
+    name: '猪猪侠1111',
+    message: '我是自定义的Vue  data数据'
+  }
+  // 将数据和模板结合，得到新的html 和 dom元素
+  // 一般使用递归
+  // compier 编译的意思
+  function compiler(template, data) {
+
+    let childNodes = template.childNodes   /*取出子元素*/
+    for (let i = 0; i < childNodes.length; i++) {
+      let type = childNodes[i].nodeType
+      if (type === 3) {
+        // 文本节点
+
+        let txt = childNodes[i].nodeValue
+
+        // 判断有没有花括号
+
+        txt = txt.replace(rkuohao, function (_, g) {
+          let key = g.trim()
+          let value = data[key]
+          return value
+
+
+        })
+        childNodes[i].nodeValue = txt
+
+
+      } else if (type === 1) {
+        compiler(childNodes[i], data)
+      }
+    }
+
+  }
+
+  let generateNode = tmpNode.cloneNode(true)
+
+
+  console.log(tmpNode)
+  compiler(generateNode, data)
+  console.log(tmpNode)
+  root.parentNode.replaceChild(generateNode, root)
+</script>
+</body>
+</html>
